@@ -1,0 +1,106 @@
+{
+    name: ["JavaScript", ".js", ".es"]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    styles: [
+        "decorator", #C678DD, #C586C0
+        "interface", #61AFEF, #4EC9B0
+        "enum", #E06C75, #4EC9B0
+        "function", #61AFEF, #C586C0
+        "variable", #E06C75, #C586C0
+        "attribute", #D19A66, #C586C0
+        "keyword", #C678DD, #C586C0
+        "string", #98C379, #C586C0
+        "number", #D19A66, #C586C0
+        "operator", #56B6C2, #C586C0
+        "type", #E5C07B, #C586C0
+        "namespace", #E5C07B, #C586C0
+        "enum", #E06C75, #C586C0
+        "tag", #E06C75, #C586C0
+        "attrName", #D19A66, #C586C0
+        "attrValue", #98C379, #C586C0
+    ]
+    defines: [
+        "single-quoted-string": {
+            style: "string"
+            start: {match: /'/}
+            end: {match: /(?m)'|$/}
+            contains: [
+                {match: /\\\n/, 0: "strEscape"}
+                {builtin: #JAVA_ESCAPED_CHAR#}
+            ]
+        }
+        "double-quoted-string": {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            contains: [
+                {match: /\\\n/, 0: "strEscape"}
+                {builtin: #JAVA_ESCAPED_CHAR#}
+            ]
+        }
+        "backtick-string": {
+            style: "string"
+            start: {match: /`/}
+            end: {match: /`/}
+            contains: [
+                {match: /\\`/, 0: "strEscape"}
+                {builtin: #JAVA_ESCAPED_CHAR#}
+                {include: "dollarExp"}
+            ]
+        }
+        "regex": {
+            start: {match: /(?<=(?:[=,(&|!:;]|^|\breturn)\s{0,20})/ + "/"}
+            end: {match: "/" + /([img]*)/, 1: "operator"}
+            style: "meta"
+            contains: [
+                {match: /\\./, 0: "strEscape"}
+                {
+                    start: {match: /\[/}
+                    end: {match: /\]/}
+                    contains: [
+                        {match: /\\./, 0: "strEscape"}
+                    ]
+                }
+            ]
+        }
+        "dollarExp": {
+            start: {match: /\$\{/}
+            end: {match: /\}/}
+            style: "strEscape"
+            contains: [
+                {include: "single-quoted-string"}
+                {include: "double-quoted-string"}
+                {include: "regex"}
+                {include: "backtick-string"}
+                {include: "dollarExp"}
+            ]
+        }
+    ]
+    contains: [
+        {include: "single-quoted-string"}
+        {include: "double-quoted-string"}
+        {include: "regex"}
+        {include: "backtick-string"}
+        {builtin: #JAVA_NUMBER#}
+        {match: /\basync(?=\s+function\b)/, 0: "keyword"}
+        {match: keywordsToRegex(
+                "break case catch class const continue debugger default delete do else enum export"
+                "extends false finally for function if implements import instanceof interface let"
+                "new null package private protected public return static super switch this with"
+                "throw true try typeof var void while yield function"
+            ), 0: "keyword"
+        }
+        // Variables
+        {match: /\b(let|const|var)\s+([a-zA-Z_$][\w$]*)/, 1: "keyword", 2: "variable"}
+        // Attributes
+        {match: /\b([a-zA-Z_$][\w$]*)(?=\s*=\s*["'{])/, 1: "attribute"}
+        // HTML Tags
+        {match: /<\/?([a-zA-Z_$][\w$]*)/, 1: "tag"}
+        // HTML Attributes
+        {match: /\b([a-zA-Z_$][\w$]*)(?=\s*=\s*["'{])/, 1: "attrName"}
+        // HTML Attribute Values
+        {match: /(["'])(?:(?=(\\?))\2.)*?\1/, 0: "attrValue"}
+    ]
+    codeFormatter: #BUILT_IN_JS_FORMATTER#
+}
